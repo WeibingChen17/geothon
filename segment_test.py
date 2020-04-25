@@ -1,12 +1,12 @@
-import Geothon as G
+from Geothon import *
 
-seg = G.getSegment('a', 'b')
+seg = segment('a', 'b')
 assert(seg.name.eq('ab') and seg.name.eq('ba'))
-assert(G.getPoint('a') in G.getPoints())
-assert(G.getPoint('b') in G.getPoints())
-assert(G.getSegment('a', 'b') in G.getSegments())
-assert(G.getSegment('b', 'a') in G.getSegments())
-assert(G.Measure.distance(G.getPoint('a'), G.getPoint('b')) == G.getSegment('a', 'b').getLength())
+assert(point('a') in allPoints())
+assert(point('b') in allPoints())
+assert(segment('a', 'b') in allSegments())
+assert(segment('b', 'a') in allSegments())
+assert(Measure.distance(point('a'), point('b')) == segment('a', 'b').getLength())
 
-seg2 = G.getSegment('b', 'a')
+seg2 = segment('b', 'a')
 assert(seg2 is seg)

@@ -1,9 +1,9 @@
-import Geothon as G
+from Geothon import *
 
-a = G.getPoint('a')
+a = point('a')
 assert(a.name.eq('a'))
-assert(a in G.getPoints())
+assert(a in allPoints())
 
-c = G.getPoint('a')
+c = point('a')
 assert(c is a )
 

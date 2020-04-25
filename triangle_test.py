@@ -1,8 +1,11 @@
-import Geothon as G
-triangle = G.Triangle('a', 'b', 'c')
-assert(Point('a') in G.getPoints())
-assert(Point('b') in G.getPoints())
-assert(Point('c') in G.getPoints())
-assert(Segment('a', 'b') in G.getSegments())
-assert(Segment('b', 'c') in G.getSegments())
-assert(Segment('c', 'a') in G.getSegments())
+from Geothon import *
+
+triangle('a', 'b', 'c')
+assert(point('a') in allPoints())
+assert(point('b') in allPoints())
+assert(point('c') in allPoints())
+assert(segment('a', 'b') in allSegments())
+assert(segment('b', 'c') in allSegments())
+assert(segment('c', 'a') in allSegments())
+
+assert(segment('a', 'b').getLength() + segment('b', 'c').getLength() > segment('c', 'a').getLength())

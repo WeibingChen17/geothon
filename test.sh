@@ -9,7 +9,7 @@ function test_python {
 
 test_python point_test.py
 test_python segment_test.py
-# test_python triangle_test.py
+test_python triangle_test.py
 # test_python circle_test.py
 # 
 # test_python e2eTest_ConwayCircle.py
