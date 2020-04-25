@@ -3,6 +3,9 @@ segments = {}
 triangles = {}
 circles = {}
 
+def show():
+    pass
+
 def point(name):
     if name in points:
         return points[name]
@@ -61,6 +64,9 @@ class Point:
         self.x = getRandom()
         self.y = getRandom()
 
+    def distanceTo(self, p): 
+        return Distance(1.0)
+
 class Segment:
     def __init__(self, begin, end):
         self.name = Name(begin + end)
@@ -70,14 +76,21 @@ class Segment:
         self.direction = (self.begin, self.end)
         self.length = None
 
+    def __contains__(self, p):
+        pass
+
     def getLength(self):
         if self.length:
             return self.length
-        self.length = Measure.distance(self.begin, self.end)
+        self.length = self.begin.distanceTo(self.end)
         return self.length
 
     def setDirection(self, begin, end):
         self.direction = (point(begin), point(end))
+
+    def extendTo(self, p, length):
+        pass
+
 
 class Triangle:
     def __init__(self, p1, p2, p3):
@@ -92,6 +105,9 @@ class Circle:
         self.center = point(name)
         self.radius = getRandom()
         circles[name] = self
+
+    def __contains__(self, p):
+        return p.distanceTo(self.center) == self.radius
     
     def getCenter(self):
         return self.center
@@ -108,21 +124,24 @@ class Circle:
     def buildFromThreePoints(self, p1, p2, p3):
         pass
 
-class Measure:
-    def __init__(self):
-        pass
+class Distance:
+    def __init__(self, d):
+        self.d = d
 
-    @staticmethod
-    def distance(p1, p2):
-        return 1.0
+    def __eq__(self, d):
+        if isinstance(d, Distance):
+            return abs(self.d - d.d) < 1e-6
+        elif isinstance(d, float):
+            return abs(self.d - d) < 1e-6
+    
+    def __add__(self, d):
+        return Distance(self.d + d.d)
 
-class Transform:
-    def __init__(self):
-        pass
+    def __gt__(self, d):
+        return self.d - d.d > 1e-6
 
-    @staticmethod
-    def extend(seg):
-        pass
+    def __lt__(self, d):
+        return d.d - self.d > 1e-6
 
 def getRandom():
     return 1.0

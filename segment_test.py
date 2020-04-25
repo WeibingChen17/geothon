@@ -6,7 +6,7 @@ assert(point('a') in allPoints())
 assert(point('b') in allPoints())
 assert(segment('a', 'b') in allSegments())
 assert(segment('b', 'a') in allSegments())
-assert(Measure.distance(point('a'), point('b')) == segment('a', 'b').getLength())
+assert(point('a').distanceTo(point('b')) == segment('a', 'b').getLength())
 
 seg2 = segment('b', 'a')
 assert(seg2 is seg)
