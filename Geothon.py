@@ -1,20 +1,28 @@
 import math 
 import numpy 
 import random
+from collections import defaultdict
 
-points = {}
-segments = {}
-triangles = {}
-circles = {}
+geoObjects = defaultdict(dict)
 
 def show():
-    pass
+    for objectType, objectDict in geoObjects.items():
+        for objectName, instance in objectDict.items():
+            instance.consolidate()
+    for objectType, objectDict in geoObjects.items():
+        for objectName, instance in objectDict.items():
+            print(instance)
+
+
+def getAFloat():
+    return random.random()
 
 def getAPoint():
     # This is the point generator.
     return random.random(), random.random()
 
 def point(name):
+    points = geoObjects['points']
     if name in points:
         return points[name]
     else:
@@ -22,9 +30,10 @@ def point(name):
         return new_point
 
 def allPoints():
-    return points.values()
+    return geoObjects['points'].values()
 
 def segment(begin, end):
+    segments = geoObjects['segments']
     name = ''.join(sorted([str(begin), str(end)]))
     if name in segments:
         seg = segments[name]
@@ -35,9 +44,10 @@ def segment(begin, end):
         return new_segment
 
 def allSegments():
-    return segments.values()
+    return geoObjects['segments'].values()
 
 def triangle(p1, p2, p3):
+    triangles = geoObjects['triangles']
     name = ''.join(sorted([p1, p2, p3]))
     if name in triangles:
         return triangles[name]
@@ -46,9 +56,10 @@ def triangle(p1, p2, p3):
         return new_triangle
 
 def allTriangles():
-    return triangles.values()
+    return geoObjects['triangles'].values()
 
 def circle(name):
+    circles = geoObjects['circles']
     if name in circles:
         return circles[name]
     else:
@@ -56,7 +67,7 @@ def circle(name):
         return new_circle
 
 def allCircles():
-    return circles.values()
+    return geoObjects['circles'].values()
 
 class OrderedString:
     def __init__(self, string):
@@ -106,19 +117,21 @@ class Point(GeoObject):
         self.name = OrderedString(name)
         self.x = None
         self.y = None
-        points[name] = self
+        geoObjects['points'][name] = self
 
     def __repr__(self):
         return '{}({}, {})'.format(self.name, self.x, self.y)
 
     def setX(self, x):
         self.x = x
-        self.update()
+        for d in self._dependent:
+            d.update()
         return self
 
     def setY(self, y):
         self.y = y
-        self.update()
+        for d in self._dependent:
+            d.update()
         return self
 
     def consolidate(self):
@@ -146,7 +159,7 @@ class Segment(GeoObject):
         self.begin = point(begin)
         self.end = point(end)
         self.length = None
-        segments[''.join(sorted([begin, end]))] = self
+        geoObjects['segments'][''.join(sorted([begin, end]))] = self
 
     def __repr__(self):
         return '{}({} -> {})'.format(self.name, self.begin, self.end)
@@ -156,12 +169,14 @@ class Segment(GeoObject):
 
     def setBegin(self, p):
         self.begin = p
-        self.update()
+        for d in self._dependent:
+            d.update()
         return self
 
     def setEnd(self, p):
         self.end = p
-        self.update()
+        for d in self._dependent:
+            d.update()
         return self
 
     def consolidate(self):
@@ -212,7 +227,10 @@ class Triangle(GeoObject):
         self.name = OrderedString(p1 + p2 + p3)
         self.points = [point(p1), point(p2), point(p3)]
         self.sides = [segment(p1, p2), segment(p2, p3), segment(p3, p1)]
-        triangles[p1 + p2 + p3] = self
+        geoObjects['triangles'][p1 + p2 + p3] = self
+
+    def __repr__(self):
+        return '{}({}, {}, {})'.format(self.name, *self.points)
 
     def consolidate(self):
         if self._consolidate:
@@ -222,7 +240,8 @@ class Triangle(GeoObject):
             for p in self.points:
                 p.consolidate()
         else:
-            self.begin, self.end = self._supporter[0](*(self._supporter[1:]))
+            # (todo) better update triangle here
+            self.points, self.sides = self._supporter[0](*(self._supporter[1:]))
         for d in self._dependent:
             d.update()
 
@@ -237,26 +256,74 @@ class Circle(GeoObject):
         super().__init__()
         self.name = OrderedString(name)
         self.center = point(name)
-        self.radius = getRandom()
-        circles[name] = self
+        self.radius = None
+        geoObjects['circles'][name] = self
 
     def __contains__(self, p):
+        self.consolidate()
+        p.consolidate()
         return p.distanceTo(self.center) == self.radius
+
+    def __repr__(self):
+        return '{}({}, r({}))'.format(self.name, self.center, self.radius)
     
     def getCenter(self):
+        self.consolidate()
         return self.center
 
     def setCenter(self, center):
         self.center = center
+        self.update()
+        return self
 
     def getRadius(self):
+        self.consolidate()
         return self.radius
 
     def setRadisu(self, radius):
         self.radius = radius
+        self.update()
+        return self
 
-    def buildFromThreePoints(self, p1, p2, p3):
-        pass
+    def consolidate(self):
+        if self._consolidate:
+            return
+        self._consolidate = True
+        if self.isIndependent():
+            self.center.consolidate()
+            self.radius = getAFloat()
+        else:
+            x, y, r = self._supporter[0](*(self._supporter[1:]))
+            if x == None:
+                # throw exception here
+                return 
+            self.center.setX(x).setY(y)
+            self.radius = r
+        for d in self._dependent:
+            d.update()
+
+    def fromThreePoints(self, p1, p2, p3):
+        def getACirleFromThreePoint(p1, p2, p3):
+            p1.consolidate()
+            p2.consolidate()
+            p3.consolidate()
+            x1, y1, x2, y2, x3, y3 = p1.x, p1.y, p2.x, p2.y, p3.x, p3.y
+            A = x1*(y2-y3)-y1*(x2-x3)+x2*y3-x3*y2
+            if abs(A) < 1e-6:
+                return None, None, None
+            B = (x1*x1+y1*y1)*(y3-y2)+(x2*x2+y2*y2)*(y1-y3)+(x3*x3+y3*y3)*(y2-y1)
+            C = (x1*x1+y1*y1)*(x2-x3)+(x2*x2+y2*y2)*(x3-x1)+(x3*x3+y3*y3)*(x1-x2)
+            D = (x1*x1+y1*y1)*(x3*y2-x2*y3)+(x2*x2+y2*y2)*(x1*y3-x3*y1)+(x3*x3+y3*y3)*(x2*y1-x1*y2)
+            x = -B/2/A
+            y = -C/2/A
+            r = math.sqrt(B*B+C*C-4*A*D)/abs(2*A)
+            return x, y, r
+        self.setSupporter([getACirleFromThreePoint, p1, p2, p3])
+        self._consolidate = False
+        p1.addDependent(self)
+        p2.addDependent(self)
+        p3.addDependent(self)
+        return self
 
 class Distance:
     eps = 1e-6
@@ -264,9 +331,9 @@ class Distance:
         self.value = value
 
     def __eq__(self, dis):
-        if isinstance(dis, Distance):
-            return abs(self.value - dis.value) < self.eps
-        elif isinstance(dis, float):
+        if isinstance(dis, (int, float)):
+            return abs(self.value - dis) < self.eps
+        elif isinstance(dis, Distance):
             return abs(self.value - dis.value) < self.eps
         else:
             return False
