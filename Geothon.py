@@ -1,4 +1,5 @@
 import math 
+import numpy 
 import random
 
 points = {}
@@ -90,6 +91,9 @@ class GeoObject:
     def addDependent(self, dependent):
         self._dependent.append(dependent)
 
+    def consolidate(self):
+        pass
+
     def update(self):
         if self._consolidate:
             self._consolidate = False
@@ -133,6 +137,7 @@ class Point(GeoObject):
         p.consolidate()
         return Distance(math.sqrt((self.x - p.x) * (self.x - p.x) 
             + (self.y - p.y) * (self.y - p.y)))
+
 
 class Segment(GeoObject):
     def __init__(self, begin, end):
@@ -201,15 +206,35 @@ class Segment(GeoObject):
         pass
 
 
-class Triangle:
+class Triangle(GeoObject):
     def __init__(self, p1, p2, p3):
+        super().__init__()
         self.name = OrderedString(p1 + p2 + p3)
         self.points = [point(p1), point(p2), point(p3)]
         self.sides = [segment(p1, p2), segment(p2, p3), segment(p3, p1)]
         triangles[p1 + p2 + p3] = self
 
-class Circle:
+    def consolidate(self):
+        if self._consolidate:
+            return
+        self._consolidate = True
+        if self.isIndependent():
+            for p in self.points:
+                p.consolidate()
+        else:
+            self.begin, self.end = self._supporter[0](*(self._supporter[1:]))
+        for d in self._dependent:
+            d.update()
+
+    def getArea(self):
+        lengths = [s.getLength().getValue() for s in self.sides]
+        semip = sum(lengths) * 0.5
+        return math.sqrt(semip * numpy.prod([semip - l for l in lengths]))
+
+
+class Circle(GeoObject):
     def __init__(self, name):
+        super().__init__()
         self.name = OrderedString(name)
         self.center = point(name)
         self.radius = getRandom()
