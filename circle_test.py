@@ -1,7 +1,7 @@
-import Geothon as G
+from Geothon import *
 
-circle = G.Circle('c')
-assert(a.name.eq('c'))
-assert(a.radius > 0)
-assert(a.center in G.getPoints())
-assert(circle in G.getCircles())
+o = circle('o')
+assert(o.name.eq('o'))
+assert(o.getRadius() > 0)
+assert(o.getCenter() in allPoints())
+assert(o in allCircles())

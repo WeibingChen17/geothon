@@ -58,8 +58,8 @@ class Point:
     def __init__(self, name):
         self.name = Name(name)
         points[name] = self
-        self.x = None
-        self.y = None
+        self.x = getRandom()
+        self.y = getRandom()
 
 class Segment:
     def __init__(self, begin, end):
@@ -86,11 +86,12 @@ class Triangle:
         self.sides = [segment(p1, p2), segment(p2, p3), segment(p3, p1)]
         triangles[p1 + p2 + p3] = self
 
-class Circe:
+class Circle:
     def __init__(self, name):
         self.name = Name(name)
-        self.center = None
-        self.radius = None
+        self.center = point(name)
+        self.radius = getRandom()
+        circles[name] = self
     
     def getCenter(self):
         return self.center
@@ -122,3 +123,6 @@ class Transform:
     @staticmethod
     def extend(seg):
         pass
+
+def getRandom():
+    return 1.0
