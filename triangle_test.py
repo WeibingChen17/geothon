@@ -1,16 +1,16 @@
 from Geothon import *
 
-t = triangle('a', 'b', 'c')
-assert(point('a') in allPoints())
-assert(point('b') in allPoints())
-assert(point('c') in allPoints())
-assert(segment('a', 'b') in allSegments())
-assert(segment('b', 'c') in allSegments())
-assert(segment('c', 'a') in allSegments())
+t = triangle('A', 'B', 'C')
+assert(point('A') in allPoints())
+assert(point('B') in allPoints())
+assert(point('C') in allPoints())
+assert(segment('A', 'B') in allSegments())
+assert(segment('B', 'C') in allSegments())
+assert(segment('C', 'A') in allSegments())
 
-assert(segment('a', 'b').getLength() + segment('b', 'c').getLength() > segment('c', 'a').getLength())
+assert(segment('A', 'B').getLength() + segment('B', 'C').getLength() > segment('C', 'A').getLength())
 assert(len(t.sides) == 3)
 assert(len(t.points) == 3)
 
-t2 = triangle('a', 'c', 'd')
+t2 = triangle('A', 'C', 'D')
 assert(t2.getArea() > 0)

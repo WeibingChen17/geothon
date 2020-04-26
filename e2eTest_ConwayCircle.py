@@ -1,18 +1,18 @@
 from Geothon import *
 import Relation as R
 
-triangle('a', 'b', 'c')
-segment('a', 'b').extendTo(point('d'), segment('a', 'c').getLength())
-segment('c', 'b').extendTo(point('e'), segment('a', 'c').getLength())
-segment('b', 'a').extendTo(point('f'), segment('c', 'b').getLength())
-segment('c', 'a').extendTo(point('g'), segment('c', 'b').getLength())
-segment('b', 'c').extendTo(point('h'), segment('a', 'b').getLength())
-segment('a', 'c').extendTo(point('i'), segment('a', 'b').getLength())
-circle('o').fromThreePoints(point('d'), point('e'), point('f'))
+triangle('A', 'B', 'C')
+segment('A', 'B').extendTo(point('D'), segment('A', 'C').getLength())
+segment('C', 'B').extendTo(point('E'), segment('A', 'C').getLength())
+segment('B', 'A').extendTo(point('F'), segment('C', 'B').getLength())
+segment('C', 'A').extendTo(point('G'), segment('C', 'B').getLength())
+segment('B', 'C').extendTo(point('H'), segment('A', 'B').getLength())
+segment('A', 'C').extendTo(point('I'), segment('A', 'B').getLength())
+circle('O').fromThreePoints(point('D'), point('E'), point('F'))
 
-assert(segment('b', 'd').getLength() == segment('b', 'e').getLength())
-assert(segment('a', 'f').getLength() == segment('a', 'g').getLength())
-assert(segment('c', 'h').getLength() == segment('c', 'i').getLength())
-assert(R.concyclic(point('d'), point('e'), point('f'), point('g'), point('h'), point('i')))
+assert(segment('B', 'D').getLength() == segment('B', 'E').getLength())
+assert(segment('A', 'F').getLength() == segment('A', 'G').getLength())
+assert(segment('C', 'H').getLength() == segment('C', 'I').getLength())
+assert(R.concyclic(point('D'), point('E'), point('F'), point('G'), point('H'), point('I')))
 
 show()

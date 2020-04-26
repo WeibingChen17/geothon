@@ -1,10 +1,10 @@
 from Geothon import *
 
-a = point('a')
-assert(a.name == 'a')
+a = point('A')
+assert(a.name == 'A')
 assert(a in allPoints())
 
-b = point('a')
+b = point('A')
 assert(b is a )
 
 assert(a.isConsolidate() == False)
@@ -14,5 +14,5 @@ a.consolidate()
 assert(a.x != None)
 assert(a.y != None)
 
-c = point('c')
+c = point('C')
 assert(c.distanceTo(a) > 0)
