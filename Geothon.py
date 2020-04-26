@@ -1,6 +1,8 @@
 import math 
-import numpy 
 import random
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import collections  as mc
 from collections import defaultdict
 
 geoObjects = defaultdict(dict)
@@ -9,10 +11,23 @@ def show():
     for objectType, objectDict in geoObjects.items():
         for objectName, instance in objectDict.items():
             instance.consolidate()
-    for objectType, objectDict in geoObjects.items():
-        for objectName, instance in objectDict.items():
-            print(instance)
-
+    fig, ax = plt.subplots(1)
+    ax.axis('off')
+    for p in geoObjects['points'].values():
+        if p.getVisible():
+            ax.text(p.x, p.y, str(p.name))
+    for s in geoObjects['segments'].values():
+        if s.getVisible():
+            ax.plot([s.begin.x, s.end.x], [s.begin.y, s.end.y], marker='o')
+    for c in geoObjects['circles'].values():
+        if c.getVisible():
+            theta = np.linspace(0, 2*np.pi, 100)
+            r = c.radius
+            x = c.center.x + r * np.cos(theta)
+            y = c.center.y + r * np.sin(theta)
+            ax.plot(x, y)
+    ax.set_aspect('equal') 
+    plt.show()
 
 def getAFloat():
     return random.random()
@@ -87,11 +102,23 @@ class OrderedString:
 class GeoObject:
     def __init__(self):
         self._consolidate = False
+        self._visible = True
         self._supporter = {}
         self._dependent = []
 
     def isConsolidate(self):
         return self._consolidate
+
+    def setConsolidate(self):
+        self._consolidate = True
+        return self
+
+    def setVisible(self, visible):
+        self._visible = visible
+        return self
+
+    def getVisible(self):
+        return self._visible
 
     def isIndependent(self):
         return not self._supporter
@@ -158,7 +185,6 @@ class Segment(GeoObject):
         self.name = OrderedString(begin + end)
         self.begin = point(begin)
         self.end = point(end)
-        self.length = None
         geoObjects['segments'][''.join(sorted([begin, end]))] = self
 
     def __repr__(self):
@@ -206,10 +232,7 @@ class Segment(GeoObject):
 
     def getLength(self):
         self.consolidate()
-        if self.length:
-            return self.length
-        self.length = self.begin.distanceTo(self.end)
-        return self.length
+        return self.begin.distanceTo(self.end)
 
     def parrelleTo(self, other):
         self.consolidate()
@@ -248,7 +271,7 @@ class Triangle(GeoObject):
     def getArea(self):
         lengths = [s.getLength().getValue() for s in self.sides]
         semip = sum(lengths) * 0.5
-        return math.sqrt(semip * numpy.prod([semip - l for l in lengths]))
+        return math.sqrt(semip * np.prod([semip - l for l in lengths]))
 
 
 class Circle(GeoObject):
@@ -298,6 +321,7 @@ class Circle(GeoObject):
                 # throw exception here
                 return 
             self.center.setX(x).setY(y)
+            self.center.setConsolidate()
             self.radius = r
         for d in self._dependent:
             d.update()
