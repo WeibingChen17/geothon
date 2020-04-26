@@ -29,6 +29,31 @@ def show():
     ax.set_aspect('equal') 
     plt.show()
 
+def getACirleFromThreePoint(p1, p2, p3):
+    p1.consolidate()
+    p2.consolidate()
+    p3.consolidate()
+    x1, y1, x2, y2, x3, y3 = p1.x, p1.y, p2.x, p2.y, p3.x, p3.y
+    A = x1*(y2-y3)-y1*(x2-x3)+x2*y3-x3*y2
+    if abs(A) < 1e-6:
+        return None, None, None
+    B = (x1*x1+y1*y1)*(y3-y2)+(x2*x2+y2*y2)*(y1-y3)+(x3*x3+y3*y3)*(y2-y1)
+    C = (x1*x1+y1*y1)*(x2-x3)+(x2*x2+y2*y2)*(x3-x1)+(x3*x3+y3*y3)*(x1-x2)
+    D = (x1*x1+y1*y1)*(x3*y2-x2*y3)+(x2*x2+y2*y2)*(x1*y3-x3*y1)+(x3*x3+y3*y3)*(x2*y1-x1*y2)
+    x = -B/2/A
+    y = -C/2/A
+    r = math.sqrt(B*B+C*C-4*A*D)/abs(2*A)
+    return x, y, r
+
+def _extendTo(p1, p2, l):
+    p1.consolidate()
+    p2.consolidate()
+    s = p1.distanceTo(p2).getValue()
+    if isinstance(l, Distance):
+        l = l.getValue()
+    return (p2.x - p1.x) * (1 + l/s) + p1.x, \
+           (p2.y - p1.y) * (1 + l/s) + p1.y
+
 def getAFloat():
     return random.random()
 
@@ -218,14 +243,6 @@ class Segment(GeoObject):
             d.update()
 
     def extendTo(self, p, length):
-        def _extendTo(p1, p2, l):
-            p1.consolidate()
-            p2.consolidate()
-            s = p1.distanceTo(p2).getValue()
-            if isinstance(length, Distance):
-                l = l.getValue()
-            return (p2.x - p1.x) * (1 +  l/s) + p1.x, \
-                    (p2.y - p1.y) * (1 + l/s) + p1.y
         p.setSupporter([_extendTo, self.begin, self.end, length])
         segment(self.end.name, p.name)
         self.addDependent(p)
@@ -327,21 +344,6 @@ class Circle(GeoObject):
             d.update()
 
     def fromThreePoints(self, p1, p2, p3):
-        def getACirleFromThreePoint(p1, p2, p3):
-            p1.consolidate()
-            p2.consolidate()
-            p3.consolidate()
-            x1, y1, x2, y2, x3, y3 = p1.x, p1.y, p2.x, p2.y, p3.x, p3.y
-            A = x1*(y2-y3)-y1*(x2-x3)+x2*y3-x3*y2
-            if abs(A) < 1e-6:
-                return None, None, None
-            B = (x1*x1+y1*y1)*(y3-y2)+(x2*x2+y2*y2)*(y1-y3)+(x3*x3+y3*y3)*(y2-y1)
-            C = (x1*x1+y1*y1)*(x2-x3)+(x2*x2+y2*y2)*(x3-x1)+(x3*x3+y3*y3)*(x1-x2)
-            D = (x1*x1+y1*y1)*(x3*y2-x2*y3)+(x2*x2+y2*y2)*(x1*y3-x3*y1)+(x3*x3+y3*y3)*(x2*y1-x1*y2)
-            x = -B/2/A
-            y = -C/2/A
-            r = math.sqrt(B*B+C*C-4*A*D)/abs(2*A)
-            return x, y, r
         self.setSupporter([getACirleFromThreePoint, p1, p2, p3])
         self._consolidate = False
         p1.addDependent(self)
